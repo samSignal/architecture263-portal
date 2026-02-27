@@ -30,6 +30,14 @@
                         
                         <div class="row g-3">
                             <div class="col-12">
+                                <label for="plan_no" class="form-label fw-bold">Plan No <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('plan_no') is-invalid @enderror" id="plan_no" name="plan_no" value="{{ session('plan_approval.step1.plan_no', old('plan_no')) }}" required placeholder="e.g. PLN-2026-001">
+                                @error('plan_no')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12">
                                 <label for="stand_no" class="form-label fw-bold">1. Stand No <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('stand_no') is-invalid @enderror" id="stand_no" name="stand_no" value="{{ session('plan_approval.step1.stand_no', old('stand_no')) }}" required placeholder="e.g. 1234 Highlands">
                                 @error('stand_no')

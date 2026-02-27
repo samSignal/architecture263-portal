@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Support\Architecture263Api;
+use Illuminate\Support\Facades\Log;
 
 class PlanApprovalController extends Controller
 {
@@ -20,6 +22,7 @@ class PlanApprovalController extends Controller
     {
         // Store data in session
         $validated = $request->validate([
+            'plan_no' => 'required|string',
             'stand_no' => 'required|string',
             'postal_address' => 'required|string',
             'estimated_cost' => 'required|numeric',
@@ -89,12 +92,46 @@ class PlanApprovalController extends Controller
         return view('plan-approval.step4', compact('data'));
     }
 
-    public function submit(Request $request)
+    public function submit(Request $request, Architecture263Api $api)
     {
-        // Here we would save to the database
-        // For now, just clear session and redirect to success
-        $request->session()->forget('plan_approval');
+        $sessionData = $request->session()->get('plan_approval', []);
 
-        return redirect()->route('plan-approval.index')->with('success', 'Application submitted successfully!');
+        // Flatten the session data
+        $data = array_merge(
+            $sessionData['step1'] ?? [],
+            $sessionData['step2'] ?? [],
+            $sessionData['step3'] ?? []
+        );
+
+        // Ensure we have data
+        if (empty($data)) {
+             return redirect()->route('plan-approval.index')->with('error', 'No application data found.');
+        }
+
+        try {
+            $token = $request->cookie('portal_token');
+            if (!$token) {
+                 return redirect()->route('portal.login')->with('error', 'Session expired. Please login again.');
+            }
+
+            $response = $api->submitPlanApplication($token, $data);
+
+            if ($response->failed()) {
+                Log::error('Plan application submission failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'data' => $data
+                ]);
+                return back()->with('error', 'Submission failed: ' . ($response->json('message') ?? 'Unknown error'));
+            }
+
+            // Success - clear session and redirect
+            $request->session()->forget('plan_approval');
+            return redirect()->route('plan-approval.index')->with('success', 'Application submitted successfully!');
+
+        } catch (\Exception $e) {
+            Log::error('Plan application submission exception', ['message' => $e->getMessage()]);
+             return back()->with('error', 'An error occurred while submitting your application. Please try again later.');
+        }
     }
 }

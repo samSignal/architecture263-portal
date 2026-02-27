@@ -39,4 +39,14 @@ class Architecture263Api
             ->withToken($token)
             ->post('/api/auth/logout');
     }
+
+    public function submitPlanApplication(string $token, array $data): Response
+    {
+        return Http::baseUrl(config('services.architecture263.base_url'))
+            ->acceptJson()
+            ->asJson()
+            ->timeout(config('services.architecture263.timeout'))
+            ->withToken($token)
+            ->post('/api/plan-applications', $data);
+    }
 }

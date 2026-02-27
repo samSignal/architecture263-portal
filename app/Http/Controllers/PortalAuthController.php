@@ -45,7 +45,7 @@ class PortalAuthController extends Controller
             ]);
         }
 
-        $token = $response->json('token');
+        $token = $response->json('access_token') ?? $response->json('token');
 
         // Store token in HTTP-only cookie (secure, not accessible to JS)
         $cookie = cookie('portal_token', $token, 60 * 24, null, null, false, true); // 1 day, HttpOnly
