@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\Architecture263Api;
+use App\Support\PortalCookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Log;
@@ -47,10 +48,9 @@ class PortalAuthController extends Controller
 
         $token = $response->json('access_token') ?? $response->json('token');
 
-        // Store token in HTTP-only cookie (secure, not accessible to JS)
-        $cookie = cookie('portal_token', $token, 60 * 24, null, null, false, true); // 1 day, HttpOnly
+        $cookie = PortalCookie::issue($token);
 
-        return redirect()->route('plan-approval.index')->withCookie($cookie);
+        return redirect()->route('engagements.index')->withCookie($cookie);
     }
 
     public function logout(Request $request, Architecture263Api $api)
@@ -79,7 +79,6 @@ class PortalAuthController extends Controller
             return redirect()->route('portal.login');
         }
 
-        // Redirect to plan approval instead of dashboard
-        return redirect()->route('plan-approval.index');
+        return redirect()->route('engagements.index');
     }
 }
