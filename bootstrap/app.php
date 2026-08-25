@@ -13,6 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'portal.auth' => \App\Http\Middleware\EnsurePortalAuthenticated::class,
+            'portal.role' => \App\Http\Middleware\EnsurePortalRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

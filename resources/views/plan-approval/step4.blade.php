@@ -15,6 +15,10 @@
                     </div>
                 </div>
                 <div class="card-body p-4">
+                    @if (session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
+
                     <div class="alert alert-success d-flex align-items-center mb-4" role="alert">
                         <i class="bx bx-check-circle me-2 fs-4"></i>
                         <div>
@@ -52,16 +56,20 @@
                         </div>
                     </div>
 
-                    <form action="{{ route('plan-approval.submit') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ route('plan-approval.submit') }}" method="POST" enctype="multipart/form-data" id="submitPlanForm">
                         @csrf
-                        
+
                         <h5 class="fw-bold mb-3 border-bottom pb-2">Drawings to Accompany this Form</h5>
                         <div class="mb-3">
                             <label for="drawings" class="form-label">Upload Plans (PDF, ZIP) <span class="text-danger">*</span></label>
-                            <input class="form-control" type="file" id="drawings" name="drawings" disabled>
-                            <div class="form-text">File upload is disabled in this demo.</div>
+                            <input class="form-control @error('drawings') is-invalid @enderror" type="file" id="drawings" name="drawings" accept=".pdf,.zip" required>
+                            @error('drawings')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @else
+                                <div class="form-text"><i class="ri-shield-check-line me-1"></i>PDF or ZIP, up to 20MB. Every upload is automatically scanned for viruses before it's accepted.</div>
+                            @enderror
                         </div>
-                        
+
                         <div class="form-check mb-4">
                             <input class="form-check-input" type="checkbox" value="" id="declaration" required>
                             <label class="form-check-label" for="declaration">
@@ -71,9 +79,17 @@
 
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{{ route('plan-approval.step3') }}" class="btn btn-outline-secondary">Back</a>
-                            <button type="submit" class="btn btn-success btn-lg px-5">Submit Application <i class="ri-check-line ms-2"></i></button>
+                            <button type="submit" class="btn btn-success btn-lg px-5" id="submitPlanBtn">Submit Application <i class="ri-check-line ms-2"></i></button>
                         </div>
                     </form>
+
+                    <script>
+                        document.getElementById('submitPlanForm').addEventListener('submit', function () {
+                            const btn = document.getElementById('submitPlanBtn');
+                            btn.disabled = true;
+                            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Scanning &amp; uploading…';
+                        });
+                    </script>
                 </div>
             </div>
         </div>

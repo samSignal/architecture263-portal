@@ -9,7 +9,7 @@
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,32 +25,6 @@
             background-color: #f6f9ff;
             color: #444444;
         }
-        
-        .wizard-header {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-            box-shadow: 0 4px 10px rgba(0,0,0,.03);
-            padding: 15px 0;
-            margin-bottom: 30px;
-        }
-
-        .logo-img {
-            height: 50px;
-            width: auto;
-        }
-
-        .wizard-title {
-            color: #012970;
-            font-weight: 700;
-            margin-bottom: 0;
-        }
-        
-        /* Centered main content for wizard */
-        #main {
-            padding: 0 20px 40px;
-            max-width: 1000px;
-            margin: 0 auto;
-        }
 
         .card {
             border: none;
@@ -59,41 +33,240 @@
             margin-bottom: 30px;
             background-color: #fff;
         }
-        
+
         .pagetitle h1 {
             font-size: 24px;
             margin-bottom: 0;
             font-weight: 600;
             color: #012970;
         }
+
+        /* ---- Sidebar ---- */
+        .portal-sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            z-index: 1030;
+            display: flex;
+            flex-direction: column;
+            transition: left .25s ease;
+        }
+
+        .portal-sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 20px 18px;
+            border-bottom: 1px solid #eef2f7;
+            text-decoration: none;
+        }
+
+        .portal-sidebar-brand img {
+            height: 42px;
+            width: auto;
+        }
+
+        .portal-sidebar-brand .title {
+            color: #012970;
+            font-weight: 700;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+
+        .portal-sidebar-nav {
+            list-style: none;
+            padding: 12px;
+            margin: 0;
+            flex: 1;
+        }
+
+        .portal-sidebar-nav a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #444;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: background-color .15s ease, color .15s ease;
+        }
+
+        .portal-sidebar-nav a i {
+            font-size: 18px;
+        }
+
+        .portal-sidebar-nav a:hover {
+            background: #f6f9ff;
+            color: #012970;
+        }
+
+        .portal-sidebar-nav a.active {
+            background: #eef2ff;
+            color: #012970;
+            font-weight: 600;
+        }
+
+        .portal-sidebar-footer {
+            padding: 14px;
+            border-top: 1px solid #eef2f7;
+        }
+
+        .portal-sidebar-footer .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1f2937;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Mobile: sidebar hidden off-canvas until toggled */
+        @media (max-width: 991px) {
+            .portal-sidebar {
+                left: -260px;
+                box-shadow: 0 0 30px rgba(0,0,0,.15);
+            }
+
+            .sidebar-open .portal-sidebar {
+                left: 0;
+            }
+        }
+
+        /* ---- Topbar (mobile toggle + guest login) ---- */
+        .portal-topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-toggle-btn {
+            font-size: 1.4rem;
+            color: #374151;
+            cursor: pointer;
+            display: none;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar-toggle-btn {
+                display: inline-block;
+            }
+        }
+
+        /* ---- Content area ---- */
+        .portal-content-wrap {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 991px) {
+            .portal-content-wrap {
+                margin-left: 0;
+            }
+        }
+
+        #main {
+            padding: 30px 20px 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        /* Dim overlay behind sidebar on mobile when open */
+        .sidebar-backdrop {
+            display: none;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar-open .sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.35);
+                z-index: 1020;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- Simple Header -->
-    <header class="wizard-header">
-        <div class="container d-flex align-items-center justify-content-between">
-            <a href="{{ route('plan-approval.index') }}" class="d-flex align-items-center text-decoration-none">
-                <img src="{{ asset('images/main_logo.png') }}" alt="IAZ Logo" class="logo-img me-3">
-                <div class="d-none d-md-block">
-                    <h5 class="wizard-title">Institute of Architects of Zimbabwe</h5>
-                    <small class="text-muted">Plan Approval Application</small>
+    @if ($portalUser)
+        @php $roles = $portalUser['roles'] ?? []; @endphp
+
+        <div class="sidebar-backdrop" onclick="document.body.classList.remove('sidebar-open')"></div>
+
+        <aside class="portal-sidebar">
+            <a href="{{ route('engagements.index') }}" class="portal-sidebar-brand">
+                <img src="{{ asset('images/main_logo.png') }}" alt="IAZ Logo">
+                <div class="title">
+                    Institute of Architects<br>of Zimbabwe
                 </div>
             </a>
-            <div>
-                @if(request()->cookie('portal_token'))
-                    <a href="{{ route('portal.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
-                @else
-                    <a href="{{ route('portal.login') }}" class="btn btn-outline-primary btn-sm">Portal Login</a>
-                @endif
-            </div>
-        </div>
-    </header>
 
-    <!-- Main Content -->
-    <main id="main">
-        @yield('content')
-    </main>
+            <ul class="portal-sidebar-nav">
+                <li>
+                    <a href="{{ route('engagements.index') }}" class="{{ request()->routeIs('engagements.*') ? 'active' : '' }}">
+                        <i class="ri-file-list-3-line"></i> My Engagements
+                    </a>
+                </li>
+                @if (in_array('client', $roles))
+                    <li>
+                        <a href="{{ route('architects.index') }}" class="{{ request()->routeIs('architects.*') ? 'active' : '' }}">
+                            <i class="ri-search-line"></i> Search Architects
+                        </a>
+                    </li>
+                @endif
+                @if (in_array('architect', $roles) || in_array('client', $roles))
+                    <li>
+                        <a href="{{ route('plan-applications.index') }}" class="{{ request()->routeIs('plan-applications.*') ? 'active' : '' }}">
+                            <i class="ri-file-paper-2-line"></i> Plan Applications
+                        </a>
+                    </li>
+                @endif
+                @if (in_array('council', $roles))
+                    <li>
+                        <a href="{{ route('council.index') }}" class="{{ request()->routeIs('council.*') ? 'active' : '' }}">
+                            <i class="ri-shield-check-line"></i> Council
+                        </a>
+                    </li>
+                @endif
+            </ul>
+
+            <div class="portal-sidebar-footer">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="user-name">{{ $portalUser['name'] ?? $portalUser['username'] }}</span>
+                    <a href="{{ route('portal.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+                </div>
+            </div>
+        </aside>
+    @endif
+
+    <div class="portal-content-wrap">
+        <div class="portal-topbar">
+            <i class="ri-menu-line sidebar-toggle-btn" onclick="document.body.classList.toggle('sidebar-open')"></i>
+
+            @unless ($portalUser)
+                <a href="{{ route('engagements.index') }}" class="d-flex align-items-center text-decoration-none">
+                    <img src="{{ asset('images/main_logo.png') }}" alt="IAZ Logo" style="height: 36px;" class="me-2">
+                    <span class="fw-bold" style="color:#012970;">Institute of Architects of Zimbabwe</span>
+                </a>
+                <a href="{{ route('portal.login') }}" class="btn btn-outline-primary btn-sm">Portal Login</a>
+            @endunless
+        </div>
+
+        <!-- Main Content -->
+        <main id="main">
+            @yield('content')
+        </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
